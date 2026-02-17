@@ -2,19 +2,18 @@ import apiClient from './client'
 import type { EmployeeSummaryDto } from './employee'
 
 export interface TravelPlanDto {
-  travelPlanId: number
+  travelId: number
   title: string
   description?: string
   startDate: string
   endDate: string
   createdAt: string
   updatedAt: string
-  createdBy: {
-    employeeId: number
-    firstName: string
-    lastName: string
-  }
-  employees: EmployeeSummaryDto[]
+  createdByHRId?: number
+  createdByHRName?: string
+  updatedByEmployeeId?: number
+  travelers?: EmployeeSummaryDto[]
+  employees?: EmployeeSummaryDto[]
 }
 
 export interface CreateTravelPlanRequest {

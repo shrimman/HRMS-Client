@@ -57,7 +57,7 @@ function NavBar() {
                 </div>
                 <div className="hidden sm:flex sm:flex-col leading-tight">
                     <h2 className="text-base font-semibold text-white">ROIMA</h2>
-                    <p className="text-xs text-slate-400">India</p>
+                    <p className="text-xs text-primary-200">India</p>
                 </div>
             </div>
 
@@ -65,7 +65,7 @@ function NavBar() {
                 <button
                     className={cn(
                         'relative p-2 rounded',
-                        'text-slate-300 hover:text-white hover:bg-primary-800',
+                        'text-primary-100 hover:text-white hover:bg-primary-800',
                         'transition-colors duration-200'
                     )}
                     aria-label="Notifications"
@@ -79,7 +79,7 @@ function NavBar() {
                         onClick={() => setProfileMenuOpen(!profileMenuOpen)}
                         className={cn(
                             'p-2 rounded',
-                            'text-slate-300 hover:text-white hover:bg-primary-800',
+                            'text-primary-100 hover:text-white hover:bg-primary-800',
                             'transition-colors duration-200'
                         )}
                         aria-label="Profile Menu"
@@ -101,7 +101,7 @@ function NavBar() {
                                 onClick={() => setProfileMenuOpen(false)}
                                 className={cn(
                                     'flex items-center gap-3 px-4 py-2.5',
-                                    'text-slate-300 hover:text-white hover:bg-primary-800',
+                                    'text-primary-100 hover:text-white hover:bg-primary-800',
                                     'transition-colors duration-150'
                                 )}
                             >
@@ -113,7 +113,7 @@ function NavBar() {
                                 onClick={handleLogout}
                                 className={cn(
                                     'w-full flex items-center gap-3 px-4 py-2.5',
-                                    'text-slate-300 hover:text-white hover:bg-red-600',
+                                    'text-primary-100 hover:text-white hover:bg-red-600',
                                     'transition-colors duration-150',
                                     'border-t border-slate-700/30 mt-1 pt-2.5'
                                 )}

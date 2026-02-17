@@ -11,10 +11,22 @@ import ReferJobModal from "./ReferJobModal"
 
 interface JobCardProps {
     job: JobOpeningDto
+    showHrActions?: boolean
+    onEdit?: (job: JobOpeningDto) => void
+    onDeactivate?: (job: JobOpeningDto) => void
+    onActivate?: (job: JobOpeningDto) => void
+    onViewReferrals?: (job: JobOpeningDto) => void
 }
 
 
-function JobCard({ job }: JobCardProps) {
+function JobCard({
+    job,
+    showHrActions,
+    onEdit,
+    onDeactivate,
+    onActivate,
+    onViewReferrals,
+}: JobCardProps) {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [referralModalOpen, setReferralModalOpen] = useState(false);
@@ -33,67 +45,114 @@ function JobCard({ job }: JobCardProps) {
         }
     }
     const jobUrl = getJobUrl()
+    const updatedByName = job.updatedByEmployee
+        ? `${job.updatedByEmployee.firstName} ${job.updatedByEmployee.lastName}`
+        : 'Not available'
 
     return (
         <>
-            <Card className={cn('mb-8 border-primary-200')}>
-                <CardHeader>
-                    <CardTitle className={cn('text-primary-600')}>{job.title}</CardTitle>
-                    <CardDescription>
-                        JOBID : #
-                        {job.jobId}
-                    </CardDescription>
-                    <CardDescription>
-                        Posted on : {new Date(job.updatedAt).toLocaleDateString()}
+            <Card className={cn('border border-primary-100/80 bg-white/90 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md')}>
+                <CardHeader className={cn('pb-4')}> 
+                    <div className={cn('flex items-start justify-between gap-4')}>
+                        <CardTitle className={cn('text-xl font-semibold tracking-tight text-foreground')}>
+                            {job.title}
+                        </CardTitle>
+                        <span className={cn('rounded-full border border-primary-200 bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700')}> 
+                            #{job.jobId}
+                        </span>
+                    </div>
+                    <CardDescription className={cn('text-sm text-muted-foreground')}> 
+                        Updated on {new Date(job.updatedAt).toLocaleDateString()}
                     </CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <div className={cn('grid grid-cols-1 md:grid-cols-2 gap-6')}>
-                        <div>
-                            <p className={cn('text-sm font-medium text-muted-foreground')}>
-                                JOB Summary
-                            </p>
-                            <p className={cn('text-lg font-semibold text-foreground mt-1')}>
-                                {job.summary || 'No summary available'}
-                            </p>
-                        </div>
+                <CardContent className={cn('space-y-5')}> 
+                    <div>
+                        <p className={cn('text-xs font-semibold uppercase tracking-wide text-muted-foreground')}> 
+                            Job Summary
+                        </p>
+                        <p className={cn('mt-1 text-sm font-medium leading-relaxed text-foreground')}> 
+                            {job.summary || 'No summary available'}
+                        </p>
                     </div>
 
                     <div>
-                        <p className={cn('text-sm font-medium text-muted-foreground')}>
-                            JOB Description Document
+                        <p className={cn('text-xs font-semibold uppercase tracking-wide text-muted-foreground')}> 
+                            Job Description Document
                         </p>
 
                         {jobUrl ? (
-                            <a href={jobUrl} target="_blank" rel="noopener noreferrer" className={cn('text-lg font-semibold text-foreground mt-1 underline')}>
+                            <a href={jobUrl} target="_blank" rel="noopener noreferrer" className={cn('text-sm font-semibold text-primary-700 underline decoration-primary-300 underline-offset-4 hover:text-primary-800')}> 
                                 View Job Description
                             </a>
                         ) : (
-                            <p className={cn('text-lg font-semibold text-foreground mt-1')}>
+                            <p className={cn('text-sm font-medium text-muted-foreground')}>
                                 No job description document found.
                             </p>
                         )}
                     </div>
+
                     <div>
-                        <p className={cn('text-sm font-medium text-muted-foreground')}>
+                        <p className={cn('text-xs font-semibold uppercase tracking-wide text-muted-foreground')}> 
                             HR Contact Person
                         </p>
-                        <p className={cn('text-lg font-semibold text-foreground mt-1')}>
-                        </p>
-                        <p className={cn('text-lg font-semibold text-foreground mt-1')}>
-                            {job.updatedByEmployee.firstName + ' ' + job.updatedByEmployee.lastName}
+                        <p className={cn('mt-1 text-sm font-semibold text-foreground')}> 
+                            {updatedByName}
                         </p>
                     </div>
 
-                    <Button variant="default" className={cn('mt-4')} onClick={() => setIsModalOpen(true)}>
-                        Share Job
-                    </Button>
+                    <div className={cn('flex flex-wrap gap-2 pt-1')}>
+                        <Button variant="default" onClick={() => setIsModalOpen(true)}>
+                            Share Job
+                        </Button>
 
-                    <Button variant="secondary" className={cn('mt-4 ml-2')} onClick={() => setReferralModalOpen(true)}>
-                        Refer a Friend
-                    </Button>
+                        <Button variant="secondary" onClick={() => setReferralModalOpen(true)}>
+                            Refer a Friend
+                        </Button>
+                    </div>
+
+                    {showHrActions ? (
+                        <div className={cn('space-y-2 pt-2 border-t border-border/60')}>
+                            <div className={cn('grid grid-cols-2 gap-2')}>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className={cn('h-9 w-full')}
+                                    onClick={() => onEdit?.(job)}
+                                >
+                                    Edit
+                                </Button>
+                                {job.isActive ? (
+                                    <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        className={cn('h-9 w-full')}
+                                        onClick={() => onDeactivate?.(job)}
+                                    >
+                                        Deactivate
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        className={cn('h-9 w-full')}
+                                        onClick={() => onActivate?.(job)}
+                                    >
+                                        Activate
+                                    </Button>
+                                )}
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className={cn('h-9 w-full text-primary-700 hover:text-primary-800')}
+                                onClick={() => onViewReferrals?.(job)}
+                            >
+                                View Referrals
+                            </Button>
+                        </div>
+                    ) : null}
                 </CardContent>
-            </Card >
+            </Card>
             <ShareJobModal
                 open={isModalOpen}
                 jobId={job.jobId}

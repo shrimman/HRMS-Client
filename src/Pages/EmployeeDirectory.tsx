@@ -2,16 +2,19 @@ import { useState, useEffect } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
-import { searchEmployee, getAllEmployees } from '@/lib/api/hr'
+import { searchEmployee, getAllEmployees, updateEmployeeProfile, type UpdateEmployeeProfileDto } from '@/lib/api/hr'
 import type { EmployeeSummaryDto } from '@/lib/api/employee'
 import { getDepartments, getDesignations } from '@/lib/api/employee'
-import { Loader2, Search, X, User } from 'lucide-react'
+import { Edit, Loader2, Search, X, User } from 'lucide-react'
 import { getFileUrl } from '@/lib/api/file'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
+import { useUserRole } from '@/lib/redux/hooks'
 
 export default function EmployeeDirectory() {
     const [employees, setEmployees] = useState<EmployeeSummaryDto[]>([])
@@ -21,7 +24,25 @@ export default function EmployeeDirectory() {
     const [selectedDesignation, setSelectedDesignation] = useState<string>('')
     const [departments, setDepartments] = useState<string[]>([])
     const [designations, setDesignations] = useState<string[]>([])
+    const [isEditOpen, setIsEditOpen] = useState(false)
+    const [isSaving, setIsSaving] = useState(false)
+    const [selectedEmployee, setSelectedEmployee] = useState<EmployeeSummaryDto | null>(null)
+    const [managerQuery, setManagerQuery] = useState('')
+    const [managerResults, setManagerResults] = useState<EmployeeSummaryDto[]>([])
+    const [isManagerSearching, setIsManagerSearching] = useState(false)
+    const [modalDepartmentName, setModalDepartmentName] = useState('')
+    const [modalDesignationName, setModalDesignationName] = useState('')
+    const [editForm, setEditForm] = useState<UpdateEmployeeProfileDto>({
+        dateOfJoining: '',
+        managerId: undefined,
+        departmentId: undefined,
+        designationId: undefined,
+        roleId: undefined,
+        isActive: true
+    })
     const navigate = useNavigate();
+    const currentRole = useUserRole()
+    const canEdit = currentRole === 'HR'
 
     useEffect(() => {
         loadInitialData()
@@ -87,6 +108,98 @@ export default function EmployeeDirectory() {
     const handleRowClick = (employee: EmployeeSummaryDto) => {
         toast.info(`View details for ${employee.firstName} ${employee.lastName}`);
         navigate(`/employee-directory/${employee.employeeId}`);
+    }
+
+    const departmentOptions = departments
+    const designationOptions = designations
+
+    const roleOptions = Array.from(
+        new Map(
+            employees.map((employee) => [employee.role.roleId, employee.role.roleName])
+        )
+    ).map(([roleId, roleName]) => ({
+        roleId,
+        roleName
+    }))
+
+    const managerOptions = (managerResults.length > 0 ? managerResults : employees).map((employee) => ({
+        employeeId: employee.employeeId,
+        fullName: `${employee.firstName} ${employee.lastName}`
+    }))
+
+    const departmentIdByName = new Map(
+        employees
+            .filter((employee) => employee.department)
+            .map((employee) => [employee.department!.departmentName, employee.department!.departmentId])
+    )
+
+    const designationIdByName = new Map(
+        employees
+            .filter((employee) => employee.designation)
+            .map((employee) => [employee.designation!.designationName, employee.designation!.designationId])
+    )
+
+    const openEditModal = (employee: EmployeeSummaryDto) => {
+        setSelectedEmployee(employee)
+        setManagerQuery('')
+        setManagerResults([])
+        setModalDepartmentName(employee.department?.departmentName ?? '')
+        setModalDesignationName(employee.designation?.designationName ?? '')
+        setEditForm({
+            dateOfJoining: employee.dateOfJoining || '',
+            managerId: employee.managerId,
+            departmentId: employee.department?.departmentId,
+            designationId: employee.designation?.designationId,
+            roleId: employee.role.roleId,
+            isActive: employee.active
+        })
+        setIsEditOpen(true)
+    }
+
+    const handleManagerSearch = async () => {
+        if (!managerQuery.trim()) {
+            setManagerResults([])
+            return
+        }
+
+        setIsManagerSearching(true)
+        try {
+            const results = await searchEmployee({ query: managerQuery.trim() })
+            setManagerResults(results)
+        } catch (error) {
+            toast.error('Failed to search managers')
+            console.error('Error searching managers:', error)
+        } finally {
+            setIsManagerSearching(false)
+        }
+    }
+
+    const handleSave = async () => {
+        if (!selectedEmployee) return
+
+        const payload: UpdateEmployeeProfileDto = {
+            dateOfJoining: editForm.dateOfJoining || undefined,
+            managerId: editForm.managerId,
+            departmentId: editForm.departmentId,
+            designationId: editForm.designationId,
+            roleId: editForm.roleId,
+            isActive: editForm.isActive
+        }
+
+        setIsSaving(true)
+        try {
+            const updated = await updateEmployeeProfile(selectedEmployee.employeeId, payload)
+            setEmployees((prev) =>
+                prev.map((employee) => employee.employeeId === updated.employeeId ? updated : employee)
+            )
+            toast.success('Employee updated successfully')
+            setIsEditOpen(false)
+        } catch (error) {
+            toast.error('Failed to update employee')
+            console.error('Error updating employee:', error)
+        } finally {
+            setIsSaving(false)
+        }
     }
 
     return (
@@ -166,6 +279,9 @@ export default function EmployeeDirectory() {
                                             <TableHead>Department</TableHead>
                                             <TableHead>Designation</TableHead>
                                             <TableHead>Role</TableHead>
+                                            {canEdit ? (
+                                                <TableHead className='w-20 text-right'>Action</TableHead>
+                                            ) : null}
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -232,7 +348,21 @@ export default function EmployeeDirectory() {
                                                                 {employee.role.roleName}
                                                             </span>
                                                         </TableCell>
-
+                                                        {canEdit ? (
+                                                            <TableCell className='text-right'>
+                                                                <Button
+                                                                    variant='ghost'
+                                                                    size='sm'
+                                                                    onClick={(event) => {
+                                                                        event.stopPropagation()
+                                                                        openEditModal(employee)
+                                                                    }}
+                                                                >
+                                                                    <Edit className='w-4 h-4 mr-1' />
+                                                                    Edit
+                                                                </Button>
+                                                            </TableCell>
+                                                        ) : null}
                                                     </TableRow>
                                                 )
                                             })
@@ -250,6 +380,178 @@ export default function EmployeeDirectory() {
                     </div>
                 </CardContent>
             </Card>
+            <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                <DialogContent className={cn('sm:max-w-2xl')}>
+                    <DialogHeader>
+                        <DialogTitle>Edit Employee Profile</DialogTitle>
+                        <DialogDescription>
+                            Update employee details and status.
+                        </DialogDescription>
+                    </DialogHeader>
+                    {selectedEmployee ? (
+                        <div className={cn('space-y-6')}>
+                            <div className={cn('grid gap-4 md:grid-cols-2')}>
+                                <div className={cn('space-y-2')}>
+                                    <Label>Employee</Label>
+                                    <div className={cn('rounded-md border px-3 py-2 text-sm text-foreground')}>
+                                        {selectedEmployee.firstName} {selectedEmployee.lastName}
+                                    </div>
+                                    <div className={cn('text-xs text-muted-foreground')}>
+                                        {selectedEmployee.email}
+                                    </div>
+                                </div>
+                                <div className={cn('space-y-2')}>
+                                    <Label htmlFor='dateOfJoining'>Date of Joining</Label>
+                                    <Input
+                                        id='dateOfJoining'
+                                        type='date'
+                                        value={editForm.dateOfJoining || ''}
+                                        onChange={(event) => setEditForm((prev) => ({
+                                            ...prev,
+                                            dateOfJoining: event.target.value
+                                        }))}
+                                    />
+                                </div>
+                                <div className={cn('space-y-2')}>
+                                    <Label>Manager</Label>
+                                    <div className={cn('flex gap-2')}>
+                                        <Input
+                                            placeholder='Search by name...'
+                                            value={managerQuery}
+                                            onChange={(event) => setManagerQuery(event.target.value)}
+                                            onKeyDown={(event) => event.key === 'Enter' && handleManagerSearch()}
+                                        />
+                                        <Button variant='outline' onClick={handleManagerSearch} disabled={isManagerSearching}>
+                                            {isManagerSearching ? 'Searching...' : 'Search'}
+                                        </Button>
+                                    </div>
+                                    <Select
+                                        value={editForm.managerId ? String(editForm.managerId) : 'none'}
+                                        onValueChange={(value) => setEditForm((prev) => ({
+                                            ...prev,
+                                            managerId: value === 'none' ? undefined : Number(value)
+                                        }))}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder='Select manager' />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value='none'>No manager</SelectItem>
+                                            {managerOptions.map((manager) => (
+                                                <SelectItem key={manager.employeeId} value={String(manager.employeeId)}>
+                                                    {manager.fullName}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className={cn('space-y-2')}>
+                                    <Label>Department</Label>
+                                    <Select
+                                        value={modalDepartmentName || 'none'}
+                                        onValueChange={(value) => {
+                                            const nextName = value === 'none' ? '' : value
+                                            const nextId = nextName ? departmentIdByName.get(nextName) : undefined
+                                            setModalDepartmentName(nextName)
+                                            setEditForm((prev) => ({
+                                                ...prev,
+                                                departmentId: nextId
+                                            }))
+                                        }}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder='Select department' />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value='none'>Not assigned</SelectItem>
+                                            {departmentOptions.map((department) => (
+                                                <SelectItem key={department} value={department}>
+                                                    {department}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className={cn('space-y-2')}>
+                                    <Label>Designation</Label>
+                                    <Select
+                                        value={modalDesignationName || 'none'}
+                                        onValueChange={(value) => {
+                                            const nextName = value === 'none' ? '' : value
+                                            const nextId = nextName ? designationIdByName.get(nextName) : undefined
+                                            setModalDesignationName(nextName)
+                                            setEditForm((prev) => ({
+                                                ...prev,
+                                                designationId: nextId
+                                            }))
+                                        }}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder='Select designation' />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value='none'>Not assigned</SelectItem>
+                                            {designationOptions.map((designation) => (
+                                                <SelectItem key={designation} value={designation}>
+                                                    {designation}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className={cn('space-y-2')}>
+                                    <Label>Role</Label>
+                                    <Select
+                                        value={editForm.roleId ? String(editForm.roleId) : 'none'}
+                                        onValueChange={(value) => setEditForm((prev) => ({
+                                            ...prev,
+                                            roleId: value === 'none' ? undefined : Number(value)
+                                        }))}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder='Select role' />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value='none'>Not assigned</SelectItem>
+                                            {roleOptions.map((role) => (
+                                                <SelectItem key={role.roleId} value={String(role.roleId)}>
+                                                    {role.roleName}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className={cn('space-y-2')}>
+                                    <Label>Status</Label>
+                                    <Select
+                                        value={editForm.isActive ? 'active' : 'inactive'}
+                                        onValueChange={(value) => setEditForm((prev) => ({
+                                            ...prev,
+                                            isActive: value === 'active'
+                                        }))}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder='Select status' />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value='active'>Active</SelectItem>
+                                            <SelectItem value='inactive'>Inactive</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button variant='outline' onClick={() => setIsEditOpen(false)} disabled={isSaving}>
+                                    Cancel
+                                </Button>
+                                <Button onClick={handleSave} disabled={isSaving}>
+                                    {isSaving ? 'Saving...' : 'Save Changes'}
+                                </Button>
+                            </DialogFooter>
+                        </div>
+                    ) : null}
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

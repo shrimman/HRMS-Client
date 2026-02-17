@@ -23,6 +23,11 @@ export interface UploadTravelDocumentRequest {
   file: File
 }
 
+export interface DocumentTypeDto {
+  id: number
+  name: string
+}
+
 export const uploadDocument = async (data: UploadTravelDocumentRequest): Promise<TravelDocumentDto> => {
   const formData = new FormData()
   formData.append('travelPlanId', data.travelPlanId.toString())
@@ -74,6 +79,11 @@ export const getDocumentsByTravelHR = async (travelId: number): Promise<TravelDo
 
 export const getDocumentsByTravelEmployee = async (travelId: number, employeeId: number): Promise<TravelDocumentDto[]> => {
   const response = await apiClient.get<TravelDocumentDto[]>(`/travel-documents/travel/${travelId}/by-employee/${employeeId}`)
+  return response.data
+}
+
+export const getDocumentTypes = async (): Promise<DocumentTypeDto[]> => {
+  const response = await apiClient.get<DocumentTypeDto[]>('/travel-documents/types')
   return response.data
 }
 

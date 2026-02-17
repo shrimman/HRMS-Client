@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { useUser, useUserRole } from '@/lib/redux/hooks'
-import { LayoutDashboard, Album, ChartGanttIcon, AwardIcon, ChevronDown, Briefcase, Trophy } from 'lucide-react'
+import { LayoutDashboard, Album, ChartGanttIcon, AwardIcon, ChevronDown, Briefcase, Trophy, PlaneIcon } from 'lucide-react'
 
 type NavigationItem = {
     label: string
@@ -31,9 +31,6 @@ export default function Sidebar() {
                 ...(role === 'Manager'
                     ?
                     [{ label: 'Team Overview', path: '/manager/team', icon: Album }] : []),
-                ...(role === 'HR'
-                    ?
-                    [{ label: 'Update Employee', path: '/hr/employees', icon: Album }] : [])
             ]
         },
         {
@@ -45,9 +42,26 @@ export default function Sidebar() {
                 { label: 'Job Reviews', path: '/job-reviews', icon: Album },
                 { label: 'Job Referrals', path: '/job-referrals', icon: Album },
                 ...(role === 'HR'
-                    ? [{ label: 'Add New Job', path: '/hr/job/new', icon: Album }]
+                    ? [
+                        { label: 'Create Job Opening', path: '/hr/job/new', icon: Album },
+                        { label: 'Share Logs', path: '/hr/job-share-logs', icon: Album },
+                    ]
                     : []),
             ]
+        },
+        {
+            label: 'Travel',
+            icon: PlaneIcon,
+            children: [
+                { label: 'My Travel Plans', path: '/myTravels', icon: Album },
+                ...(role === 'HR'
+                    ? [{ label: 'Create Travel Plan', path: '/createTravel', icon: Album }]
+                    : []),
+                ...(role === 'HR'
+                    ? [{ label: 'My Created Plans', path: '/hr/travels/created', icon: Album }]
+                    : []),
+            ]
+
         },
         {
             label: 'Achievements',
@@ -104,7 +118,7 @@ export default function Sidebar() {
                         <p className="text-sm font-medium text-white truncate">
                             {user?.firstName} {user?.lastName}
                         </p>
-                        <p className="text-xs text-slate-400">{role}</p>
+                        <p className="text-xs text-primary-200">{role}</p>
                     </div>
                 </div>
             </div>
@@ -127,7 +141,7 @@ export default function Sidebar() {
                                         'transition-colors duration-150',
                                         parentActive
                                             ? 'bg-secondary-500/90 text-white'
-                                            : 'text-slate-300 hover:text-white hover:bg-primary-800'
+                                            : 'text-primary-100 hover:text-white hover:bg-primary-800'
                                     )}
                                 >
                                     <Icon className="w-4 h-4 shrink-0" />
@@ -150,7 +164,7 @@ export default function Sidebar() {
                                         'transition-colors duration-150',
                                         isActive(item.path!)
                                             ? 'bg-secondary-500/90 text-white'
-                                            : 'text-slate-300 hover:text-white hover:bg-primary-800'
+                                            : 'text-primary-100 hover:text-white hover:bg-primary-800'
                                     )}
                                 >
                                     <Icon className="w-4 h-4 shrink-0" />
@@ -171,7 +185,7 @@ export default function Sidebar() {
                                                 'transition-colors duration-150',
                                                 isActive(item.path)
                                                     ? 'bg-secondary-500/70 text-white'
-                                                    : 'text-slate-400 hover:text-white hover:bg-primary-800/50'
+                                                    : 'text-primary-200 hover:text-white hover:bg-primary-800/50'
                                             )}
                                         >
                                             <span>{item.label}</span>
@@ -191,7 +205,7 @@ export default function Sidebar() {
                                                     'transition-colors duration-150',
                                                     childActive
                                                         ? 'bg-secondary-500/70 text-white'
-                                                        : 'text-slate-400 hover:text-white hover:bg-primary-800/50'
+                                                        : 'text-primary-200 hover:text-white hover:bg-primary-800/50'
                                                 )}
                                             >
                                                 <ChildIcon className="w-3.5 h-3.5 shrink-0" />

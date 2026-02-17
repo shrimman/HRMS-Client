@@ -85,19 +85,7 @@ function EmployeeProfile() {
                                         </p>
                                     </div>
 
-                                    <div>
-                                        <p className={cn('text-sm font-medium text-muted-foreground')}>
-                                            Status
-                                        </p>
-                                        <span className={cn(
-                                            'inline-block mt-1 px-3 py-1 rounded-full text-sm font-semibold',
-                                            profile.active
-                                                ? 'bg-green-100 text-green-700'
-                                                : 'bg-red-100 text-red-700'
-                                        )}>
-                                            {profile.active ? 'Active' : 'Inactive'}
-                                        </span>
-                                    </div>
+
                                     <div>
                                         <p className={cn('text-sm font-medium text-muted-foreground')}>
                                             Date of Birth
@@ -131,10 +119,24 @@ function EmployeeProfile() {
                                                 : 'Not assigned'}
                                         </p>
                                     </div>
-
+                                    
+                                    <div>
+                                        <p className={cn('text-sm font-medium text-muted-foreground')}>
+                                            Status
+                                        </p>
+                                        <span className={cn(
+                                            'inline-block mt-1 px-3 py-1 rounded-full text-sm font-semibold',
+                                            profile.active
+                                                ? 'bg-green-100 text-green-700'
+                                                : 'bg-red-100 text-red-700'
+                                        )}>
+                                            {profile.active ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </div>
                                 </>
                                 :
                                 null
+
                         }
                         <div>
                             <p className={cn('text-sm font-medium text-muted-foreground')}>

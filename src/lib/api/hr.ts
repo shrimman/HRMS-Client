@@ -25,7 +25,16 @@ export const searchEmployee = async (params: SearchEmployeeParams): Promise<Empl
   return response.data;
 }
 
-export const updateEmployeeProfile = async (id: number, data: Partial<EmployeeSummaryDto>): Promise<EmployeeSummaryDto> => {
+export interface UpdateEmployeeProfileDto {
+  dateOfJoining?: string
+  managerId?: number
+  departmentId?: number
+  designationId?: number
+  roleId?: number
+  isActive?: boolean
+}
+
+export const updateEmployeeProfile = async (id: number, data: UpdateEmployeeProfileDto): Promise<EmployeeSummaryDto> => {
   const response = await apiClient.post<EmployeeSummaryDto>(`/hr/profile/${id}`, data);
   return response.data;
 }
