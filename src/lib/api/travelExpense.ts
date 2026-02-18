@@ -67,6 +67,16 @@ export interface ExpenseFilterRequest {
   expenseTypeId?: number
 }
 
+export interface ExpenseStatusTypeDto {
+  id: number
+  name: string
+}
+
+export interface ExpenseTypeDto {
+  id: number
+  name: string
+}
+
 export const createExpense = async (data: CreateTravelExpenseRequest): Promise<TravelExpenseDto> => {
   const response = await apiClient.post<TravelExpenseDto>('/travel-expenses', data)
   return response.data
@@ -150,6 +160,8 @@ export const getPendingManagerApprovals = async (): Promise<TravelExpenseDto[]> 
 }
 
 export const deleteExpense = async (expenseId: number): Promise<void> => {
+  console.log("delete expense id : ", expenseId);
+
   await apiClient.delete(`/travel-expenses/${expenseId}`)
 }
 
@@ -183,10 +195,21 @@ export const addParticipant = async (expenseId: number, participantId: number): 
 }
 
 export const removeParticipant = async (expenseId: number, participantId: number): Promise<void> => {
+  console.log(expenseId, participantId);
   await apiClient.delete(`/travel-expenses/${expenseId}/participants/${participantId}`)
 }
 
 export const getExpenseParticipants = async (expenseId: number): Promise<EmployeeSummaryDto[]> => {
   const response = await apiClient.get<EmployeeSummaryDto[]>(`/travel-expenses/${expenseId}/participants`)
+  return response.data
+}
+
+export const getExpenseStatusTypes = async (): Promise<ExpenseStatusTypeDto[]> => {
+  const response = await apiClient.get<ExpenseStatusTypeDto[]>('/travel-expenses/status-types')
+  return response.data
+}
+
+export const getExpenseTypes = async (): Promise<ExpenseTypeDto[]> => {
+  const response = await apiClient.get<ExpenseTypeDto[]>('/travel-expenses/expense-types')
   return response.data
 }

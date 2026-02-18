@@ -28,6 +28,14 @@ import PageNotFoundPage from './Pages/PageNotFoundPage'
 import CreateTravelPlanPage from './Pages/CreateTravelPlanPage'
 import HrTravelPlansPage from './Pages/HrTravelPlansPage'
 import HrTravelPlanDetailsPage from './Pages/HrTravelPlanDetailsPage'
+import TravelExpense from './Pages/TravelExpense'
+import CreateEditExpense from './Pages/CreateEditExpense'
+import ExpenseDetails from './Pages/ExpenseDetails'
+import HrExpenseList from './Pages/HrExpenseList'
+import HrExpenseDetails from './Pages/HrExpenseDetails'
+import ManagerPendingApprovals from './Pages/ManagerPendingApprovals'
+import ManagerExpenseDetails from './Pages/ManagerExpenseDetails'
+import { getExpenseById } from './lib/api/travelExpense'
 
 const router = createBrowserRouter([
   {
@@ -41,10 +49,7 @@ const router = createBrowserRouter([
         path: '/login',
         element: <LoginPage />,
       },
-      {
-        path: '/signup',
-        element: <SignupPage />,
-      },
+
     ],
   },
   {
@@ -57,6 +62,10 @@ const router = createBrowserRouter([
       {
         path: '/home',
         element: <HomePage />,
+      },
+      {
+        path: '/signup',
+        element: <SignupPage />,
       },
       {
         path: '/profile',
@@ -116,10 +125,10 @@ const router = createBrowserRouter([
       {
         path: '/myTravels',
         element: <TravelHistory />,
-      }, 
+      },
       {
-        path : '/createTravel',
-        element : <CreateTravelPlanPage />
+        path: '/createTravel',
+        element: <CreateTravelPlanPage />
       },
       {
         path: '/hr/travels/created',
@@ -135,6 +144,55 @@ const router = createBrowserRouter([
         loader: ({ params }) => {
           const travelId = params.travelId;
           return getTravelPlanById(Number(travelId));
+        }
+      },
+      {
+        path: '/travel-expenses',
+        element: <TravelExpense />,
+      },
+      {
+        path: '/travel-expenses/new',
+        element: <CreateEditExpense />,
+      },
+      {
+        path: '/travel-expenses/:expenseId',
+        element: <ExpenseDetails />,
+        loader: ({ params }) => {
+          const expenseId = params.expenseId;
+          return getExpenseById(Number(expenseId));
+        }
+      },
+      {
+        path: '/travel-expenses/:expenseId/edit',
+        element: <CreateEditExpense />,
+        loader: ({ params }) => {
+          const expenseId = params.expenseId;
+          return getExpenseById(Number(expenseId));
+        }
+      },
+      {
+        path: '/hr/travel-expenses',
+        element: <HrExpenseList />,
+      },
+      {
+        path: '/hr/travel-expenses/:expenseId',
+        element: <HrExpenseDetails />,
+        loader: ({ params }) => {
+          const expenseId = params.expenseId;
+          return getExpenseById(Number(expenseId));
+        }
+      }
+      ,
+      {
+        path: '/manager/travel-expenses',
+        element: <ManagerPendingApprovals />,
+      },
+      {
+        path: '/manager/travel-expenses/:expenseId',
+        element: <ManagerExpenseDetails />,
+        loader: ({ params }) => {
+          const expenseId = params.expenseId;
+          return getExpenseById(Number(expenseId));
         }
       }
     ],

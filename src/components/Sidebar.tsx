@@ -2,7 +2,12 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { useUser, useUserRole } from '@/lib/redux/hooks'
-import { LayoutDashboard, Album, ChartGanttIcon, AwardIcon, ChevronDown, Briefcase, Trophy, PlaneIcon } from 'lucide-react'
+import {
+    LayoutDashboard, Album, ChartGanttIcon, AwardIcon, ChevronDown, Briefcase, Trophy, PlaneIcon, FileUser, ReceiptIcon,
+    TicketsPlane,
+    UserPlus,
+    University
+} from 'lucide-react'
 
 type NavigationItem = {
     label: string
@@ -19,18 +24,20 @@ export default function Sidebar() {
 
     const navigationItems: NavigationItem[] = [
         { label: 'Dashboard', path: '/home', icon: LayoutDashboard },
-        // { label: 'Profile', path: '/profile', icon: User },
         {
             label: 'Organization',
-            icon: Briefcase,
+            icon: University,
             children: [
                 ...(role === 'HR' || role === 'Manager'
                     ?
                     [{ label: 'Org Chart', path: '/org-chart', icon: ChartGanttIcon }] : []),
-                { label: 'Employee Directory', path: '/employee-directory', icon: Album },
+                { label: 'Employee Directory', path: '/employee-directory', icon: FileUser },
                 ...(role === 'Manager'
                     ?
                     [{ label: 'Team Overview', path: '/manager/team', icon: Album }] : []),
+                ...(role === 'HR'
+                    ?
+                    [{ label: 'Add New Employee', path: '/signup', icon: UserPlus }] : []),
             ]
         },
         {
@@ -54,11 +61,18 @@ export default function Sidebar() {
             icon: PlaneIcon,
             children: [
                 { label: 'My Travel Plans', path: '/myTravels', icon: Album },
+                { label: 'Travel Expenses', path: '/travel-expenses', icon: ReceiptIcon },
                 ...(role === 'HR'
-                    ? [{ label: 'Create Travel Plan', path: '/createTravel', icon: Album }]
+                    ? [{ label: 'Create Travel Plan', path: '/createTravel', icon: TicketsPlane }]
                     : []),
                 ...(role === 'HR'
                     ? [{ label: 'My Created Plans', path: '/hr/travels/created', icon: Album }]
+                    : []),
+                ...(role === 'HR'
+                    ? [{ label: 'Manage Expenses', path: '/hr/travel-expenses', icon: ReceiptIcon }]
+                    : []),
+                ...(role === 'Manager'
+                    ? [{ label: 'Pending Approvals', path: '/manager/travel-expenses', icon: Album }]
                     : []),
             ]
 
@@ -67,8 +81,8 @@ export default function Sidebar() {
             label: 'Achievements',
             icon: Trophy,
             children: [
-                { label: 'Create Post', path: '/create-post', icon: AwardIcon },
                 { label: 'Achievement Feed', path: '/feed', icon: AwardIcon },
+                { label: 'My Post', path: '/my-post', icon: AwardIcon },
             ]
         },
     ]
