@@ -1,16 +1,18 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { login } from '@/lib/api/auth/auth'
-import { useAppDispatch } from '@/lib/redux/hooks'
-import { loginSuccess, setError, setLoading } from '@/lib/redux/slices/authSlice'
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
+import { checkAuth, loginSuccess, setError, setLoading } from '@/lib/redux/slices/authSlice'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from '@/components/ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, } from '@/components/ui/form'
 import { AxiosError } from 'axios'
+import { useEffect } from 'react'
+import { Spinner } from '@/components/ui/spinner'
 
 const loginSchema = z.object({
   email: z
@@ -56,6 +58,26 @@ export default function LoginPage() {
     } finally {
       dispatch(setLoading(false));
     }
+  }
+
+  const { isAuthenticated, authChecked, loading } = useAppSelector((state) => state.auth)
+
+  useEffect(() => {
+    if (!authChecked) {
+      dispatch(checkAuth())
+    }
+  }, [authChecked, dispatch])
+
+  if (!authChecked || loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <Spinner className="size-6" />
+      </div>
+    )
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/home" replace />
   }
 
   return (
@@ -125,17 +147,6 @@ export default function LoginPage() {
           </form>
         </Form>
 
-        <div className={cn('mt-6 text-center text-sm')}>
-          <span className={cn('text-muted-foreground')}>
-            Don't have an account?{' '}
-          </span>
-          <Link
-            to="/signup"
-            className={cn('font-medium text-foreground hover:underline')}
-          >
-            Sign up
-          </Link>
-        </div>
       </CardContent>
     </Card>
   )

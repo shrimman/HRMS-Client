@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -135,11 +135,11 @@ export default function SignupPage() {
   }
 
   return (
-    <Card className={cn('w-full', 'backdrop-blur-md', 'bg-white/30', 'border-white/40', 'border-2', 'shadow-xl')}>
+    <Card className={cn('w-full', 'backdrop-blur-md', 'border-primary-200', 'shadow-xl')}>
       <CardHeader>
-        <CardTitle>Create Account</CardTitle>
+        <CardTitle className={cn('text-primary-600')}>Create Account</CardTitle>
         <CardDescription>
-          Sign up to get started with your recruitment process
+          Add a new employee to your organization by creating an account for them. Please fill in the details below to get started.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -357,17 +357,6 @@ export default function SignupPage() {
           </form>
         </Form>
 
-        <div className={cn('mt-6 text-center text-sm')}>
-          <span className={cn('text-muted-foreground')}>
-            Already have an account?{' '}
-          </span>
-          <Link
-            to="/login"
-            className={cn('font-medium text-foreground hover:underline')}
-          >
-            Login
-          </Link>
-        </div>
       </CardContent>
     </Card>
   )

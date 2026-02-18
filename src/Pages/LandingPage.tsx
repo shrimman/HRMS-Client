@@ -32,16 +32,6 @@ export default function LandingPage() {
           >
             Login to Your Account
           </Button>
-          <Button
-            onClick={() => navigate('/signup')}
-            variant="outline"
-            className={cn(
-              'w-full px-6 py-3 text-base font-semibold',
-              'border-2 border-primary-600 text-primary-600 hover:bg-primary-50 dark:border-primary-400 dark:text-primary-400 dark:hover:bg-primary-950/50 transition-colors'
-            )}
-          >
-            Create New Account
-          </Button>
         </div>
       </div>
     </div>
