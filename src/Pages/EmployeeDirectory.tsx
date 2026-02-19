@@ -127,17 +127,17 @@ export default function EmployeeDirectory() {
         fullName: `${employee.firstName} ${employee.lastName}`
     }))
 
-    const departmentIdByName = new Map(
-        employees
-            .filter((employee) => employee.department)
-            .map((employee) => [employee.department!.departmentName, employee.department!.departmentId])
-    )
+    const departmentIdByName = new Map<string, number>()
+    departments.map((dept) => {
+        const index = departments.indexOf(dept);
+        departmentIdByName.set(dept, index + 1);
+    });
 
-    const designationIdByName = new Map(
-        employees
-            .filter((employee) => employee.designation)
-            .map((employee) => [employee.designation!.designationName, employee.designation!.designationId])
-    )
+    const designationIdByName = new Map<string, number>()
+    designations.map((desig) => {
+        const index = designations.indexOf(desig);
+        designationIdByName.set(desig, index + 1);
+    });
 
     const openEditModal = (employee: EmployeeSummaryDto) => {
         setSelectedEmployee(employee)
