@@ -1,33 +1,65 @@
 import { cn } from '@/lib/utils'
 import { Building2, Bell, User, LogOut } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { logout as logoutAction } from '@/lib/redux/slices/authSlice'
 import { logout as logoutAPI } from '@/lib/api/auth/auth'
+import Notifications from './Notifications'
+import { getUnreadCount } from '@/lib/api/notification'
 
 function NavBar() {
     const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+    const [notificationsOpen, setNotificationsOpen] = useState(false)
+    const [unreadCount, setUnreadCount] = useState(0)
     const profileMenuRef = useRef<HTMLDivElement>(null)
+    const notificationsRef = useRef<HTMLDivElement>(null)
     const dispatch = useAppDispatch()
+    const isMountedRef = useRef(true)
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
                 setProfileMenuOpen(false)
             }
+            if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+                setNotificationsOpen(false)
+            }
         }
 
         if (profileMenuOpen) {
+            document.addEventListener('mousedown', handleClickOutside)
+        }
+        if (notificationsOpen) {
             document.addEventListener('mousedown', handleClickOutside)
         }
 
         return () => {
             document.removeEventListener('mousedown', handleClickOutside)
         }
-    }, [profileMenuOpen])
+    }, [profileMenuOpen, notificationsOpen])
 
-    const handleLogout = async () => {
+    useEffect(() => {
+        isMountedRef.current = true
+        return () => {
+            isMountedRef.current = false
+        }
+    }, [])
+
+    const fetchUnreadCount = async () => {
+        try {
+            const count = await getUnreadCount();
+            if (isMountedRef.current) setUnreadCount(count);
+        } catch (error) {
+            console.error('Failed to fetch unread notifications count:', error)
+        }
+    }
+
+    useEffect(() => {
+        fetchUnreadCount()
+    }, [])
+
+    const handleLogout = useCallback(async () => {
         try {
             await logoutAPI()
             dispatch(logoutAction())
@@ -35,7 +67,7 @@ function NavBar() {
         } catch (error) {
             console.error('Logout failed:', error)
         }
-    }
+    }, [dispatch])
     return (
         <nav
             className={cn(
@@ -61,18 +93,30 @@ function NavBar() {
                 </div>
             </div>
 
-            <div className="flex items-center gap-2">
-                <button
-                    className={cn(
-                        'relative p-2 rounded',
-                        'text-primary-100 hover:text-white hover:bg-primary-800',
-                        'transition-colors duration-200'
+            <div className="flex items-center gap-2" >
+                <div className="relative" ref={notificationsRef}>
+                    <button
+                        onClick={() => setNotificationsOpen(!notificationsOpen)}
+                        className={cn(
+                            'relative p-2 rounded',
+                            'text-primary-100 hover:text-white hover:bg-primary-800',
+                            'transition-colors duration-200'
+                        )}
+                        aria-label="Notifications"
+                    >
+                        <Bell className="w-5 h-5" />
+                        <span className={cn(
+                            'absolute -top-1 -right-1 min-w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center px-0.5',
+                        )}>
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                    </button>
+
+                    {notificationsOpen && (
+                        <Notifications onMarked={fetchUnreadCount} />
                     )}
-                    aria-label="Notifications"
-                >
-                    <Bell className="w-5 h-5" />
-                    <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-                </button>
+                </div>
+
 
                 <div className="relative" ref={profileMenuRef}>
                     <button
