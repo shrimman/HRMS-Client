@@ -1,95 +1,128 @@
 import { cn } from '@/lib/utils'
 import { useAppSelector } from '@/lib/redux/hooks'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import OrgChartPersonal from '@/components/OrgChartPersonal'
+import { useEffect, useState } from 'react';
+import { BriefcaseBusiness, Cake, Loader2 } from 'lucide-react';
+import { getBirthdays, getWorkAnniversaries } from '@/lib/api/achievement';
+import EventCalender from './EventCalender';
 
 export default function HomePage() {
-    const user = useAppSelector((state) => state.auth.user)
+
+    const user = useAppSelector((state) => state.auth.user);
+    const [isLoading, setIsLoading] = useState(false);
+    const [birthdays, setBirthdays] = useState<string[]>([]);
+    const [anniversaries, setAnniversaries] = useState<string[]>([]);
+
+    const getCelebrations = async () => {
+        setIsLoading(true);
+        try {
+            const birthdaysResponse = await getBirthdays();
+            const anniversariesResponse = await getWorkAnniversaries();
+            setBirthdays(birthdaysResponse);
+            setAnniversaries(anniversariesResponse);
+        }
+        catch (error) {
+            console.error('Error fetching celebrations:', error);
+        }
+        finally {
+            setIsLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        getCelebrations();
+    }, []);
+
+
+    if (isLoading) {
+        return (
+            <div className={cn('flex-1 flex items-center justify-center p-8')}>
+                <Loader2 className={cn('w-12 h-12 animate-spin text-primary-600')} />
+                <p className={cn('text-lg font-semibold text-foreground')}>Loading...</p>
+            </div>
+        )
+    }
+
 
     return (
         <div className={cn('flex-1 overflow-auto p-8 bg-background')}>
             <div className={cn('max-w-6xl mx-auto')}>
-
-                {/* <div className={cn('mb-8')}>
-                    <h1 className={cn('text-4xl font-bold text-foreground mb-2')}>
-                        Welcome back, {user?.firstName}!
-                    </h1>
-                    <p className={cn('text-lg text-muted-foreground')}>
-                        Your Dashboard
-                    </p>
-                </div> */}
-
-                <Card className={cn('mb-8 border-primary-200')}>
-                    <CardHeader>
-                        <CardTitle className={cn('text-primary-600')}>Your Profile</CardTitle>
-                        <CardDescription>
-                            Your account information and role permissions
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className={cn('grid grid-cols-1 md:grid-cols-2 gap-6')}>
-                            <div>
-                                <p className={cn('text-sm font-medium text-muted-foreground')}>
-                                    First Name
-                                </p>
-                                <p className={cn('text-lg font-semibold text-foreground mt-1')}>
-                                    {user?.firstName}
-                                </p>
-                            </div>
-
-                            <div>
-                                <p className={cn('text-sm font-medium text-muted-foreground')}>
-                                    Last Name
-                                </p>
-                                <p className={cn('text-lg font-semibold text-foreground mt-1')}>
-                                    {user?.lastName}
-                                </p>
-                            </div>
-
-                            <div>
-                                <p className={cn('text-sm font-medium text-muted-foreground')}>
-                                    Email
-                                </p>
-                                <p className={cn('text-lg font-semibold text-foreground mt-1')}>
-                                    {user?.email}
-                                </p>
-                            </div>
-{/* 
-                            <div>
-                                <p className={cn('text-sm font-medium text-muted-foreground')}>
-                                    User ID
-                                </p>
-                                <p className={cn('text-lg font-semibold text-foreground mt-1 font-mono')}>
-                                    {user?.id}
-                                </p>
-                            </div> */}
-
-                            <div>
-                                <p className={cn('text-sm font-medium text-muted-foreground')}>
-                                    Role
-                                </p>
-                                <span className={cn(
-                                    'inline-block mt-1 px-3 py-1 rounded-full text-sm font-semibold',
-                                    'bg-primary-100 text-primary-700'
-                                )}>
-                                    {user?.roleName}
-                                </span>
-                            </div>
-
-
-                        </div>
-                    </CardContent>
-                </Card>
 
                 <Card>
                     <CardHeader>
                         <CardTitle className={cn('text-primary-600')}>MY CALENDER</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className={cn('text-lg font-semibold text-foreground mt-1')}>
+                        {/* <p className={cn('text-lg font-semibold text-foreground mt-1')}>
                             This is where my calendar will be displayed. It will show Game Schedule, Travel Assignments, and other important events.
-                        </p>
+                        </p> */}
+                        <EventCalender />
                     </CardContent>
                 </Card>
+                <div className={cn('grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2')}>
+                    <Card className={cn('mt-8')}>
+                        <CardHeader>
+                            <CardTitle className={cn('text-primary-600')}>
+                                <Cake className='align-middle mr-6 relative' />
+                                <span className={cn('align-middle relative')} > Birthdays Today </span>
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {
+                                birthdays.length > 0 ? (
+                                    birthdays.map((birthday, index) => (
+                                        <span key={index} className={cn('text-lg font-semibold w-full  text-foreground mt-1 border border-black-600 p-2')}>
+                                            {birthday}
+                                        </span>
+                                    ))
+                                ) : (
+                                    <p className={cn('text-lg font-semibold text-foreground mt-1 ')}>
+                                        No Work Anniversaries Today
+                                    </p>
+                                )
+                            }
+                        </CardContent>
+                    </Card>
+
+                    <Card className={cn('mt-8')}>
+                        <CardHeader>
+                            <CardTitle className={cn('text-primary-600')}>
+                                <BriefcaseBusiness className='align-middle mr-6 relative' />
+                                <span className={cn('align-middle relative')} > Work Anniversaries Today </span>
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {
+                                anniversaries.length > 0 ? (
+                                    anniversaries.map((anniversary, index) => (
+                                        <span key={index} className={cn('text-lg font-semibold w-full  text-foreground mt-1 border-2 border-black-600 p-2')}>
+                                            {anniversary}
+                                        </span>
+                                    ))
+                                ) : (
+                                    <p className={cn('text-lg font-semibold text-foreground mt-1 ')}>
+                                        No Birthday's Today
+                                    </p>
+                                )
+                            }
+                        </CardContent>
+                    </Card>
+
+                </div>
+
+
+                {user?.id && (
+                    <Card className={cn('mt-8')}>
+                        <CardHeader>
+                            <CardTitle className={cn('text-primary-600')}>Organization</CardTitle>
+                            <CardDescription>Manager chain above you and your direct reports below</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <OrgChartPersonal employeeId={parseInt(user.id, 10) || 0} />
+                        </CardContent>
+                    </Card>
+                )}
 
             </div>
         </div>
