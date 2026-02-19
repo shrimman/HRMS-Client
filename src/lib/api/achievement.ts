@@ -61,9 +61,6 @@ export interface CreateCommentRequest {
   text: string
 }
 
-export interface UpdateCommentRequest {
-  text: string
-}
 
 export const getFeed = async (): Promise<AchievementPostDto[]> => {
   const response = await apiClient.get<AchievementPostDto[]>('/achievements/feed')
@@ -132,11 +129,6 @@ export const createComment = async (data: CreateCommentRequest): Promise<Achieve
   return response.data
 }
 
-export const updateComment = async (commentId: number, data: UpdateCommentRequest): Promise<AchievementCommentDto> => {
-  const response = await apiClient.put<AchievementCommentDto>(`/achievements/comments/${commentId}`, data)
-  return response.data
-}
-
 export const deleteComment = async (commentId: number): Promise<void> => {
   await apiClient.delete(`/achievements/comments/${commentId}`)
 }
@@ -171,5 +163,15 @@ export const getPostsByDateRange = async (startDate: string, endDate: string): P
   const response = await apiClient.get<AchievementPostDto[]>('/achievements/posts/filter/date-range', {
     params: { startDate, endDate }
   })
+  return response.data
+}
+
+export const getBirthdays = async (): Promise<string[]> => {
+  const response = await apiClient.get<string[]>('/achievements/birthdays');
+  return response.data
+}
+
+export const getWorkAnniversaries = async (): Promise<string[]> => {
+  const response = await apiClient.get<string[]>('/achievements/work-anniversaries');
   return response.data
 }

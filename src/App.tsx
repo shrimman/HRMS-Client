@@ -36,6 +36,7 @@ import HrExpenseDetails from './Pages/HrExpenseDetails'
 import ManagerPendingApprovals from './Pages/ManagerPendingApprovals'
 import ManagerExpenseDetails from './Pages/ManagerExpenseDetails'
 import { getExpenseById } from './lib/api/travelExpense'
+import MyAchievementPosts from './Pages/MyAchievementPosts'
 
 const router = createBrowserRouter([
   {
@@ -121,6 +122,10 @@ const router = createBrowserRouter([
       {
         path: '/create-post',
         element: <CreateNewPost />,
+      },
+      {
+        path: '/my-posts',
+        element: <MyAchievementPosts />,
       },
       {
         path: '/myTravels',

@@ -82,7 +82,7 @@ export default function Sidebar() {
             icon: Trophy,
             children: [
                 { label: 'Achievement Feed', path: '/feed', icon: AwardIcon },
-                { label: 'My Post', path: '/my-post', icon: AwardIcon },
+                { label: 'My Post', path: '/my-posts', icon: AwardIcon },
             ]
         },
     ]
