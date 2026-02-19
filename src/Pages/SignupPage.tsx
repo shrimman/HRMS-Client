@@ -3,25 +3,13 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { cn } from '@/lib/utils'
-import { login, signup } from '@/lib/api/auth/auth'
+import { signup} from '@/lib/api/auth/auth'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { signupSuccess, setError, setLoading, type UserRole } from '@/lib/redux/slices/authSlice'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from '@/components/ui/card'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { toast } from 'sonner'
 
 const signupSchema = z
   .object({
@@ -116,21 +104,15 @@ export default function SignupPage() {
         roleName: values.roleName as UserRole,
       }
 
-      await signup(data)
-
-      const loginResponse = await login({
-        email: values.email,
-        password: values.password,
-      })
-
-      dispatch(signupSuccess({ user: loginResponse }))
-
-      navigate('/home')
+      await signup(data);
+      dispatch(signupSuccess())
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Signup failed'
       dispatch(setError(errorMessage))
     } finally {
+      toast.success('Account created successfully!')
       dispatch(setLoading(false))
+      navigate('/home')
     }
   }
 
@@ -180,7 +162,7 @@ export default function SignupPage() {
                     <FormControl>
                       <input
                         type="text"
-                        placeholder="Doe"
+                        placeholder="Snow"
                         className={cn(
                           'w-full rounded-md border px-3 py-2 text-sm',
                           'border-input bg-background',

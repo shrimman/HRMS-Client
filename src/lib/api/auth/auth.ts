@@ -55,9 +55,9 @@ export const login = async (credentials: LoginRequest): Promise<User> => {
     return toUser(response.data.user);
 }
 
-export const signup = async (data: SignupRequest): Promise<User> => {
+export const signup = async (data: SignupRequest): Promise<AuthApiResponse> => {
     const response = await apiClient.post<AuthApiResponse>('/auth/signup', data);
-    return toUser(response.data.user);
+    return response.data;
 }
 
 export const logout = async (): Promise<void> => {

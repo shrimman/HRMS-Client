@@ -50,11 +50,8 @@ const authSlice = createSlice({
       state.error = null
     },
 
-    signupSuccess: (state, action: PayloadAction<{ user: User }>) => {
-      state.user = action.payload.user
-      state.isAuthenticated = true
+    signupSuccess: (state) => {
       state.loading = false
-      state.authChecked = true
       state.error = null
     },
 
